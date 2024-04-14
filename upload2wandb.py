@@ -16,7 +16,9 @@ if __name__ == "__main__":
     # artifact_name = "song-lyrics-dataset"
     # local_path = "resume.json"
     # artifact_name = "resume-dataset"
-    local_path = "recipes.json"
-    artifact_name = "recipe-dataset"
+    # local_path = "recipes.json"
+    # artifact_name = "recipe-dataset"
+    local_path = "prompts100.json"
+    artifact_name = "prompts-dataset"
 
     upload_to_wandb(local_path, artifact_name, "dataset")

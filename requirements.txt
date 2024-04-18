@@ -1,3 +1,5 @@
-tqdm
-wandb
-python-dotenv
+pandas==2.2.2
+python-dotenv==1.0.1
+torch==2.2.2
+tqdm==4.66.2
+transformers==4.40.0

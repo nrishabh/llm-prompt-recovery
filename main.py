@@ -2,8 +2,8 @@ import torch
 from customdataset import FullDataset
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-def load_data():
-    full_dataset=FullDataset('./fulldataset/sample_full.json')
+def load_data(path='./fulldataset/sample_full.json'):
+    full_dataset=FullDataset(path)
     train_dataset, valtest_dataset = torch.utils.data.random_split(full_dataset, [0.8, 0.2])
     val_dataset, test_dataset = torch.utils.data.random_split(valtest_dataset, [0.5,0.5])
     print('full size',len(full_dataset))
@@ -21,5 +21,6 @@ def check_dataloader(train_dataloader, val_dataloader, test_dataloader):
         print(input_texts, prompts, output_texts)
 
 if __name__=='__main__':
-    train_dataloader, val_dataloader, test_dataloader = load_data()
+    dataset_path='./fulldataset/sample_full.json'
+    train_dataloader, val_dataloader, test_dataloader = load_data(path=dataset_path)
     check_dataloader(train_dataloader, val_dataloader, test_dataloader)

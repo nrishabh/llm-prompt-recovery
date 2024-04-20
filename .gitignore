@@ -162,8 +162,9 @@ cython_debug/
 # data directory
 data/
 
-# wandb directory
+# wandb directories
 wandb/
+artifacts/
 
 # environment file
 .env

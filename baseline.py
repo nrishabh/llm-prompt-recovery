@@ -20,7 +20,7 @@ with open(f'artifacts/{artifact_dir}/{json_name}', 'r') as file:
     data = json.load(file)
 print('Data loaded successfully', data[0])
 
-prompt_text = "Guess the prompt used to generate the following text:"
+prompt_text = "Generate the prompt used to rewrite the above text into the following text:"
 
 # Prepare input text by concatenating 'original_text_text' and 'rewritten_text'
 inputs = [f"{item['original_text_text']} [SEP] {prompt_text} [SEP] {item['rewritten_text']}" for item in data]
@@ -42,7 +42,7 @@ for i, input_text in enumerate(inputs):
     encoded_input = tokenizer(input_text, return_tensors="pt").to(device)
     # Generate output sequences
     # output_sequences = model.generate(**encoded_input, max_length=512)
-    output_sequences = model.generate(**encoded_input, max_new_tokens=50)
+    output_sequences = model.generate(**encoded_input, max_new_tokens=500)
     # Decode the output sequences
     # output_text = tokenizer.decode(output_sequences[0], skip_special_tokens=True)
     output_text = tokenizer.decode(output_sequences[0])

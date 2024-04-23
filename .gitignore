@@ -165,7 +165,11 @@ data/
 # wandb directories
 wandb/
 artifacts/
+fulldataset/
 
 # environment file
 .env
 .DS_Store
+
+# log files
+*.log

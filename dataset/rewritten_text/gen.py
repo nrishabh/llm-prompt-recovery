@@ -13,64 +13,71 @@ from itertools import combinations
 from tqdm.autonotebook import tqdm
 
 
-def generate_rewritten_text(args, dataset):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+class LangModel:
 
-    if args.quantization == "8bit":
-        model_kwargs = {
-            "torch_dtype": torch.float16,
-            "quantization_config": {"load_in_8bit": True},
-            "low_cpu_mem_usage": True,
-        }
-    elif args.quantization == "4bit":
-        model_kwargs = {
-            "torch_dtype": torch.float16,
-            "quantization_config": {"load_in_4bit": True},
-            "low_cpu_mem_usage": True,
-        }
-    else:
-        model_kwargs = {"torch_dtype": torch.float16}
+    def __init__(self, args):
 
-    pipeline = transformers.pipeline(
-        "text-generation",
-        model=args.model,
-        model_kwargs=model_kwargs,
-        device=device,
-    )
+        if args.quantization == "8bit":
+            model_kwargs = {
+                "torch_dtype": torch.float16,
+                "quantization_config": {"load_in_8bit": True},
+                "low_cpu_mem_usage": True,
+            }
+            device = None
+        elif args.quantization == "4bit":
+            model_kwargs = {
+                "torch_dtype": torch.float32,
+                "quantization_config": {"load_in_4bit": True},
+                "low_cpu_mem_usage": True,
+            }
+            device = None
+        else:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            model_kwargs = {"torch_dtype": torch.float16}
 
-    messages = list()
-    for item in dataset:
-        messages.append(
-            [
-                {"role": "system", "content": item["instruction"]["prompt"]},
-                {"role": "user", "content": item["original_text"]["text"]},
-            ]
+        self.pipeline = transformers.pipeline(
+            "text-generation",
+            model=args.model,
+            model_kwargs=model_kwargs,
+            device=device,
         )
 
-    prompts = pipeline.tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
-
-    terminators = [
-        pipeline.tokenizer.eos_token_id,
-        pipeline.tokenizer.convert_tokens_to_ids("<|eot_id|>"),
-    ]
-
-    outputs = pipeline(
-        prompts,
-        max_new_tokens=1000,
-        eos_token_id=terminators,
-        do_sample=True,
-        temperature=0.6,
-        top_p=0.9,
-    )
-
-    for idx, output in enumerate(outputs):
-        dataset[idx]["rewritten_text"] = output[0]["generated_text"][
-            len(prompts[idx]) :
+        self.terminators = [
+            self.pipeline.tokenizer.eos_token_id,
+            self.pipeline.tokenizer.convert_tokens_to_ids("<|eot_id|>"),
         ]
 
-    return dataset
+    def generate_text(self, dataset):
+
+        messages = list()
+        for item in dataset:
+            messages.append(
+                [
+                    {"role": "system", "content": item["instruction"]["prompt"]},
+                    {"role": "user", "content": item["original_text"]["text"]},
+                ]
+            )
+
+        prompts = self.pipeline.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+
+        outputs = self.pipeline(
+            prompts,
+            max_new_tokens=1000,
+            eos_token_id=self.terminators,
+            pad_token_id=self.pipeline.tokenizer.eos_token_id,
+            do_sample=True,
+            temperature=0.6,
+            top_p=0.9,
+        )
+
+        for idx, output in enumerate(outputs):
+            dataset[idx]["rewritten_text"] = output[0]["generated_text"][
+                len(prompts[idx]) :
+            ]
+
+        return dataset
 
 
 def main(args):
@@ -94,7 +101,7 @@ def main(args):
         with open(os.path.join(artifact_dir, os.listdir(artifact_dir)[0]), "r") as f:
             original_datasets[dataset] = json.load(f)
         # check that the length of dataset is at least args.num_originals
-        if len(original_datasets[dataset]) >= args.num_originals:
+        if len(original_datasets[dataset]) < args.num_originals:
             logging.warning(
                 f"Dataset {dataset} has fewer than {args.num_originals} items."
             )
@@ -194,13 +201,15 @@ def main(args):
         train_dataset_batches = [train_dataset]
         test_dataset_batches = [test_dataset]
 
+    model = LangModel(args)
+
     for idx, batch in tqdm(
         enumerate(train_dataset_batches),
         unit="batches",
         total=len(train_dataset_batches),
         desc="Generating train dataset",
     ):
-        train_dataset_batches[idx] = generate_rewritten_text(args, batch)
+        train_dataset_batches[idx] = model.generate_text(batch)
 
     for idx, batch in tqdm(
         enumerate(test_dataset_batches),
@@ -208,7 +217,7 @@ def main(args):
         total=len(test_dataset_batches),
         desc="Generating test dataset",
     ):
-        test_dataset_batches[idx] = generate_rewritten_text(args, batch)
+        test_dataset_batches[idx] = model.generate_text(batch)
 
     # DONE: Flatten the batches
     train_dataset = []

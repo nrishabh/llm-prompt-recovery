@@ -11,15 +11,15 @@
 #SBATCH --mem=16G
 
 module load anaconda
-conda activate llm-prompt-recovery
+conda activate ssm_project
 
 python gen.py \
-    --original-datasets yahoo-dataset shakespeare-dataset email-dataset news-articles-dataset recipe-dataset resume-dataset song-lyrics-dataset \
+    --original-datasets shakespeare-dataset email-dataset news-articles-dataset recipe-dataset resume-dataset song-lyrics-dataset \
     --prompt-dataset instruction-prompts-dataset \
     --num-prompts 10 \
-    --num-originals 100 \
+    --num-originals 10 \
     --model "meta-llama/Meta-Llama-3-8B-Instruct" \
-    --quantization 8bit \
+    --quantization 4bit \
     --batch-size 10 \
     --train-test-split 0.8 \
-    --output-dataset-name "prompt-recovery-dataset"
+    --output-dataset-name "mini-dataset"

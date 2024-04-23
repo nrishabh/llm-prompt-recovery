@@ -11,6 +11,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from itertools import combinations
 from tqdm.autonotebook import tqdm
+from transformers import AutoTok
 
 
 class LangModel:
@@ -34,6 +35,13 @@ class LangModel:
         else:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model_kwargs = {"torch_dtype": torch.float16}
+
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            torch_dtype=torch.bfloat16,
+            device_map="auto",
+        )
 
         self.pipeline = transformers.pipeline(
             "text-generation",

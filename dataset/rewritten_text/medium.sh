@@ -19,9 +19,9 @@ python gen.py \
     --original-datasets shakespeare-dataset email-dataset news-articles-dataset recipe-dataset resume-dataset song-lyrics-dataset \
     --prompt-dataset instruction-prompts-dataset \
     --num-prompts 10 \
-    --num-originals 10 \
+    --num-originals 100 \
     --model "meta-llama/Meta-Llama-3-8B-Instruct" \
     --quantization 4bit \
-    --batch-size 20 \
+    --batch-size 128 \
     --train-test-split 0.8 \
-    --output-dataset-name "mini-dataset"
+    --output-dataset-name "medium-dataset"

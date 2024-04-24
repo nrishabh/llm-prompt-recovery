@@ -4,11 +4,13 @@
 #SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=4:00:0
+#SBATCH --time=12:00:0
 #SBATCH --job-name="ssm-project-prompt-recovery"
 # save output in slurm_outputs directory
 #SBATCH --output=slurm_outputs/large-generation-%j.out
 #SBATCH --mem=32G
+#SBATCH --mail-type=end 
+#SBATCH --mail-user=rnanawa1@jhu.edu
 
 module load anaconda
 conda activate ssm_project

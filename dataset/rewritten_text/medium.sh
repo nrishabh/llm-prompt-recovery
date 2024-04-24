@@ -7,21 +7,18 @@
 #SBATCH --time=4:00:0
 #SBATCH --job-name="ssm-project-prompt-recovery"
 # save output in slurm_outputs directory
-#SBATCH --output=slurm_outputs/slurm-%j.out
+#SBATCH --output=slurm_outputs/medium-generation-%j.out
 #SBATCH --mem=32G
-#SBATCH --mail-type=end 
-#SBATCH --mail-user=rnanawa1@jhu.edu
 
 module load anaconda
-conda activate llm-prompt-recovery
+conda activate ssm_project
 
-python gen.py \
+python gen_v2.py \
     --original-datasets shakespeare-dataset email-dataset news-articles-dataset recipe-dataset resume-dataset song-lyrics-dataset \
     --prompt-dataset instruction-prompts-dataset \
     --num-prompts 10 \
-    --num-originals 100 \
+    --num-originals 20 \
     --model "meta-llama/Meta-Llama-3-8B-Instruct" \
     --quantization 4bit \
-    --batch-size 128 \
     --train-test-split 0.8 \
     --output-dataset-name "medium-dataset"

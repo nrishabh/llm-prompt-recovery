@@ -6,6 +6,10 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import logging
 import json
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # from huggingface_hub import notebook_login
 
 # notebook_login()
@@ -14,7 +18,7 @@ import json
 logging.basicConfig(filename='model_outputs.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Load data from the downloaded artifact
-artifact_dir = 'arxiv-abstracts-dataset_20240420_031345'
+artifact_dir = 'arxiv-abstracts-dataset_20240420_031345:v0'
 json_name = 'arxiv-abstracts-dataset_20240420_031345.json'
 with open(f'artifacts/{artifact_dir}/{json_name}', 'r') as file:
     data = json.load(file)
@@ -53,24 +57,10 @@ for i, input_text in enumerate(inputs):
 
 print('Outputs generated successfully')
 
-# Output results, optionally compare with targets
-# for output, target in zip(outputs, targets):
-#     print(f"Generated: {output}\nExpected: {target}\n")
-
 # Log results, optionally compare with targets
 for output, target in zip(outputs, targets):
     logging.info(f"Generated: {output}")
     logging.info(f"Expected: {target}")
-
-# tokenizer = AutoTokenizer.from_pretrained("google/gemma-2b")
-# model = AutoModelForCausalLM.from_pretrained("google/gemma-2b")
-
-# input_text = "Write me a poem about Machine Learning."
-# input_ids = tokenizer(input_text, return_tensors="pt")
-
-# outputs = model.generate(**input_ids)
-# logging.info(tokenizer.decode(outputs[0]))
-
 
 
 

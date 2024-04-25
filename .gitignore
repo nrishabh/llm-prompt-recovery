@@ -173,3 +173,10 @@ fulldataset/
 
 # log files
 *.log
+
+# slurm outputs
+*.out
+*.env
+
+# sbatch files
+*.sh

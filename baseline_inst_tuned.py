@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set up logging configuration
-logging.basicConfig(filename='model_outputs.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='baseline_it.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Initialize a new run
 run = wandb.init(entity="jhu-llm-prompt-recovery", project="llm-prompt-recovery", job_type="process")
@@ -34,10 +34,9 @@ print('Data loaded successfully', data[0])
 
 # Prepare input text by concatenating 'original_text_text' and 'rewritten_text'
 # inputs = [f"{item['original_text_text']} [SEP] {prompt_text} [SEP] {item['rewritten_text']}" for item in data]
-original_text_inputs = [f"{item['original_text_text']}]" for item in data]
-rewritten_text_inputs = [f"{item['rewritten_text']}" for item in data]
-
-targets = [item['instruction_text'] for item in data]
+targets = [item['instruction']['prompt'] for item in data]
+original_text_inputs = [item['original_text']['text'] for item in data]
+rewritten_text_inputs = [item['rewritten_text'] for item in data]
 
 # Load tokenizer and model
 model_id = "gg-hf/gemma-2b-it"
@@ -65,10 +64,14 @@ outputs = []
 bleu_scores = []
 for original_text, rewritten_text, target in tqdm(zip(original_text_inputs, rewritten_text_inputs, targets), total=len(original_text_inputs)):
     # Creating chat for gemma 2b it
+    # chat = [
+    #     { "role": "user", "content": original_text },
+    #     { "role": "user", "content": prompt_text },
+    #     { "role": "user", "content": rewritten_text },
+    # ]
+
     chat = [
-        { "role": "user", "content": original_text },
-        { "role": "user", "content": prompt_text },
-        { "role": "user", "content": rewritten_text },
+        { "role": "user", "content": f'{original_text} [SEP] {prompt_text} [SEP] {rewritten_text}' },
     ]
 
     # tokenizing the prompt for the model

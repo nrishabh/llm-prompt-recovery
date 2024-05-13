@@ -1,3 +1,4 @@
+import os
 import torch
 import wandb
 import argparse
@@ -51,7 +52,7 @@ def main(args):
         entity="jhu-llm-prompt-recovery",
         project="llm-prompt-recovery",
         job_type="qlora",
-        name=f'qlora-{args.dataset_subset.split("-")[0]}',
+        name=f'qlora-{args.dataset_subset.split("-")[0]}-{str(args.epochs)}',
     )
 
     dataset = datasets.load_dataset(args.dataset, args.dataset_subset)
@@ -91,7 +92,7 @@ def main(args):
 
     # Initializing TrainingArguments with default values
     training_args = transformers.TrainingArguments(
-        output_dir="./trained/",
+        output_dir=f"./trained/qlora-{args.dataset_subset.split('-')[0]}-{str(args.epochs)}/",
         evaluation_strategy="epoch",
         do_eval=True,
         per_device_train_batch_size=args.train_batch_size,
@@ -128,17 +129,21 @@ def main(args):
 
     trainer.push_to_hub(token="")
 
-    target = dataset["test"]["completion"]
-    baseline = doTest(peft_model, tokenizer, dataset["test"]["prompt"])
-    finetuned = doTest(trainer.model, tokenizer, dataset["test"]["prompt"])
-    baseline_metrics = calc_metrics(target, baseline)
-    finetuned_metrics = calc_metrics(target, finetuned)
+    # target = dataset["test"]["completion"]
+    # baseline = doTest(peft_model, tokenizer, dataset["test"]["prompt"])
+    # finetuned = doTest(trainer.model, tokenizer, dataset["test"]["prompt"])
+    # baseline_metrics = calc_metrics(target, baseline)
+    # finetuned_metrics = calc_metrics(target, finetuned)
 
-    wandb.log({"target": target, "baseline": baseline, "finetuned": finetuned})
-    wandb.log({"baseline_rouge": baseline_metrics})
-    wandb.log({"finetuned_metrics": finetuned_metrics})
+    # wandb.log({"target": target, "baseline": baseline, "finetuned": finetuned})
+    # wandb.log({"baseline_rouge": baseline_metrics})
+    # wandb.log({"finetuned_metrics": finetuned_metrics})
 
     wandb.finish()
+
+    os.system(
+        f"rm -r ./trained/qlora-{args.dataset_subset.split('-')[0]}-{str(args.epochs)}/"
+    )
 
 
 if __name__ == "__main__":
@@ -174,3 +179,5 @@ if __name__ == "__main__":
     load_dotenv("/home/rnanawa1/llm-prompt-recovery/.env")
 
     args = parser.parse_args()
+
+    main(args)

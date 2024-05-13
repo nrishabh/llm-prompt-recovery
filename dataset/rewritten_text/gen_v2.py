@@ -219,6 +219,35 @@ def main(args):
         **model_kwargs,
     )
 
+    logging.info("Processing test dataset...")
+    test_dataloader = Dataloader(dataset.test_dataset, tokenizer=tokenizer)
+    test_dataloader.process()
+
+    terminators = [
+        tokenizer.eos_token_id,
+        tokenizer.convert_tokens_to_ids("<|eot_id|>"),
+    ]
+
+    for idx, inputs in tqdm(
+        enumerate(test_dataloader),
+        total=len(test_dataloader),
+        desc="Generating rewritten text",
+        unit="data item",
+    ):
+        outputs = model.generate(
+            inputs.to(model.device),
+            max_new_tokens=256,
+            eos_token_id=terminators,
+            do_sample=True,
+            temperature=0.6,
+            top_p=0.9,
+            pad_token_id=tokenizer.eos_token_id,
+        )
+        response = outputs[0][inputs.shape[-1] :]
+        dataset.test_dataset[idx]["rewritten_text"] = tokenizer.decode(
+            response, skip_special_tokens=True
+        )
+
     logging.info("Processing train dataset...")
     train_dataloader = Dataloader(dataset.train_dataset, tokenizer=tokenizer)
     train_dataloader.process()

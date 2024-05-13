@@ -1,16 +1,19 @@
 #!/bin/bash
 
-#SBATCH --partition=mig_class
+#SBATCH --account=danielk_gpu
+#SBATCH --partition=ica100
 #SBATCH --gres=gpu:1
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --time=4:00:0
-#SBATCH --job-name="ssm-project-prompt-recovery"
-#SBATCH --output=slurm_outputs/jupyter-%j.out
-#SBATCH --mem=16G
+#SBATCH --ntasks-per-node=2
+#SBATCH --mem=80G
+#SBATCH --time=12:00:00
+#SBATCH --job-name=cs601-llm-prompt-recovery
+#SBATCH --output=outputs/jupyter/jupyter-%J.log
+#SBATCH --mail-type=all 
+#SBATCH --mail-user=rnanawa1@jhu.edu
 
 module load anaconda
-conda activate ssm_project
+conda activate rishabh
 
 port=$(shuf -i8000-9999 -n1)
 echo $port

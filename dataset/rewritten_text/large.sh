@@ -1,21 +1,21 @@
 #!/bin/bash
 
-#SBATCH --partition=mig_class
+#SBATCH --account=danielk_gpu
+#SBATCH --partition=a100
 #SBATCH --gres=gpu:1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --time=12:00:0
-#SBATCH --job-name="ssm-project-prompt-recovery"
-# save output in slurm_outputs directory
-#SBATCH --output=slurm_outputs/large-generation-%j.out
-#SBATCH --mem=32G
-#SBATCH --mail-type=end 
+#SBATCH --mem=40G
+#SBATCH --time=16:00:00
+#SBATCH --job-name=cs601-llm-prompt-recovery
+#SBATCH --output=outputs/slurm/large-%J.log
+#SBATCH --mail-type=all 
 #SBATCH --mail-user=rnanawa1@jhu.edu
 
 module load anaconda
-conda activate ssm_project
+conda activate rishabh
 
-python gen_v2.py \
+python /home/rnanawa1/llm-prompt-recovery/dataset/rewritten_text/gen_v2.py \
     --original-datasets shakespeare-dataset email-dataset news-articles-dataset recipe-dataset resume-dataset song-lyrics-dataset \
     --prompt-dataset instruction-prompts-dataset \
     --num-prompts 10 \

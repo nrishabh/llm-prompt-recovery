@@ -1,17 +1,22 @@
 import torch
 import wandb
+import argparse
 import datasets
 import numpy as np
 import transformers
 from trl import SFTTrainer
-from dotenv import load_dotenv()
+from dotenv import load_dotenv
 from peft import LoraConfig, PeftModel
 from torchmetrics.text.rouge import ROUGEScore
 
 
-def calc_metrics(inputs: list(str), outputs: list(str)):
-    rouge_r = ROUGEScore(rouge_keys=("rouge1", "rouge2"))
-    return rouge_r(outputs, inputs)
+def calc_metrics(inputs: list, outputs: list):
+    try:
+        rouge_r = ROUGEScore()
+        return rouge_r(outputs, inputs)
+    except:
+        rouge_r = ROUGEScore(rouge_keys=("rouge1", "rouge2"))
+        return rouge_r(outputs, inputs)
 
 
 def doTest(model, tokenizer, testds):
@@ -121,11 +126,19 @@ def main(args):
 
     train_result = trainer.train()
 
-    trainer.push_to_hub(token="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")
+    trainer.push_to_hub(token="")
 
     target = dataset["test"]["completion"]
     baseline = doTest(peft_model, tokenizer, dataset["test"]["prompt"])
     finetuned = doTest(trainer.model, tokenizer, dataset["test"]["prompt"])
+    baseline_metrics = calc_metrics(target, baseline)
+    finetuned_metrics = calc_metrics(target, finetuned)
+
+    wandb.log({"target": target, "baseline": baseline, "finetuned": finetuned})
+    wandb.log({"baseline_rouge": baseline_metrics})
+    wandb.log({"finetuned_metrics": finetuned_metrics})
+
+    wandb.finish()
 
 
 if __name__ == "__main__":
